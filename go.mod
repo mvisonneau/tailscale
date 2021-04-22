@@ -46,5 +46,3 @@ require (
 )
 
 replace github.com/github/certstore => github.com/cyolosecurity/certstore v0.0.0-20200922073901-ece7f1d353c2
-
-replace inet.af/wf => ../../inet.af/wf
