@@ -119,6 +119,8 @@ github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJy
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/tailscale/depaware v0.0.0-20201214215404-77d1e9757027 h1:lK99QQdH3yBWY6aGilF+IRlQIdmhzLrsEmF6JgN+Ryw=
 github.com/tailscale/depaware v0.0.0-20201214215404-77d1e9757027/go.mod h1:p9lPsd+cx33L3H9nNoecRRxPssFKUwwI50I3pZ0yT+8=
+github.com/tailscale/wireguard-go v0.0.0-20210419202603-b32acd8f0292 h1:rKgYi0k3TNqEz5f7sc6zNeufZcnxm1Efd6bb39cGGkY=
+github.com/tailscale/wireguard-go v0.0.0-20210419202603-b32acd8f0292/go.mod h1:ys4yUmhKncXy1jWP34qUHKipRjl322VVhxoh1Rkfo7c=
 github.com/tcnksm/go-httpstat v0.2.0 h1:rP7T5e5U2HfmOBmZzGgGZjBQ5/GluWUylujl0tJ04I0=
 github.com/tcnksm/go-httpstat v0.2.0/go.mod h1:s3JVJFtQxtBEBC9dwcdTTXS9xFnM3SXAZwPG41aurT8=
 github.com/toqueteos/webbrowser v1.2.0 h1:tVP/gpK69Fx+qMJKsLE7TD8LuGWPnEV71wBN9rrstGQ=
@@ -241,5 +243,9 @@ inet.af/netstack v0.0.0-20210317161235-a1bf4e56ef22 h1:DNtszwGa6w76qlIr+PbPEnlBJ
 inet.af/netstack v0.0.0-20210317161235-a1bf4e56ef22/go.mod h1:GVx+5OZtbG4TVOW5ilmyRZAZXr1cNwfqUEkTOtWK0PM=
 inet.af/peercred v0.0.0-20210302202138-56e694897155 h1:KojYNEYqDkZ2O3LdyTstR1l13L3ePKTIEM2h7ONkfkE=
 inet.af/peercred v0.0.0-20210302202138-56e694897155/go.mod h1:FjawnflS/udxX+SvpsMgZfdqx2aykOlkISeAsADi5IU=
+inet.af/wf v0.0.0-20210315002834-2cd3664404c3 h1:MRFEVfKg3eS/EgiRHanV2//BpOLCKtOjxHdMcsueDEI=
+inet.af/wf v0.0.0-20210315002834-2cd3664404c3/go.mod h1:56/0QVlZ4NmPRh1QuU2OfrKqjSgt5P39R534gD2JMpQ=
+inet.af/wf v0.0.0-20210424212123-eaa011a774a4 h1:g1VVXY1xRKoO17aKY3g9KeJxDW0lGx1n2Y+WPSWkOL8=
+inet.af/wf v0.0.0-20210424212123-eaa011a774a4/go.mod h1:56/0QVlZ4NmPRh1QuU2OfrKqjSgt5P39R534gD2JMpQ=
 rsc.io/goversion v1.2.0 h1:SPn+NLTiAG7w30IRK/DKp1BjvpWabYgxlLp/+kx5J8w=
 rsc.io/goversion v1.2.0/go.mod h1:Eih9y/uIBS3ulggl7KNJ09xGSLcuNaLgmvvqa07sgfo=

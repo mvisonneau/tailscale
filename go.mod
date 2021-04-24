@@ -41,7 +41,7 @@ require (
 	inet.af/netaddr v0.0.0-20210222205655-a1ec2b7b8c44
 	inet.af/netstack v0.0.0-20210317161235-a1bf4e56ef22
 	inet.af/peercred v0.0.0-20210302202138-56e694897155
-	inet.af/wf v0.0.0-20210315002834-2cd3664404c3
+	inet.af/wf v0.0.0-20210424212123-eaa011a774a4
 	rsc.io/goversion v1.2.0
 )
 
