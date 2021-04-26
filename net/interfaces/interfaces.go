@@ -79,6 +79,14 @@ func isProblematicInterface(nif *net.Interface) bool {
 // LocalAddresses returns the machine's IP addresses, separated by
 // whether they're loopback addresses.
 func LocalAddresses() (regular, loopback []netaddr.IP, err error) {
+	regular, loopback, err = localAddressesMaybeLinkLocal(false)
+	if len(regular) > 0 {
+		return
+	}
+	return localAddressesMaybeLinkLocal(true)
+}
+
+func localAddressesMaybeLinkLocal(includeLL bool) (regular, loopback []netaddr.IP, err error) {
 	// TODO(crawshaw): don't serve interface addresses that we are routing
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -113,7 +121,7 @@ func LocalAddresses() (regular, loopback []netaddr.IP, err error) {
 				if tsaddr.IsTailscaleIP(ip) {
 					continue
 				}
-				if ip.IsLinkLocalUnicast() {
+				if ip.IsLinkLocalUnicast() && !includeLL {
 					continue
 				}
 				if ip.IsLoopback() || ifcIsLoopback {
@@ -240,10 +248,18 @@ func (s *State) String() string {
 	fmt.Fprintf(&sb, "interfaces.State{defaultRoute=%v ifs={", s.DefaultRouteInterface)
 	ifs := make([]string, 0, len(s.Interface))
 	for k := range s.Interface {
-		if anyInterestingIP(s.InterfaceIPs[k]) {
+		if anyInterestingIP(s.InterfaceIPs[k], false) {
 			ifs = append(ifs, k)
 		}
 	}
+	if len(ifs) == 0 {
+		for k := range s.Interface {
+			if anyInterestingIP(s.InterfaceIPs[k], true) {
+				ifs = append(ifs, k)
+			}
+		}
+	}
+
 	sort.Slice(ifs, func(i, j int) bool {
 		upi, upj := s.Interface[ifs[i]].IsUp(), s.Interface[ifs[j]].IsUp()
 		if upi != upj {
@@ -260,7 +276,7 @@ func (s *State) String() string {
 			fmt.Fprintf(&sb, "%s:[", ifName)
 			needSpace := false
 			for _, pfx := range s.InterfaceIPs[ifName] {
-				if !isInterestingIP(pfx.IP) {
+				if !isInterestingIP(pfx.IP, false) {
 					continue
 				}
 				if needSpace {
@@ -348,7 +364,8 @@ func prefixesEqual(a, b []netaddr.IPPrefix) bool {
 
 // FilterInteresting reports whether i is an interesting non-Tailscale interface.
 func FilterInteresting(i Interface, ips []netaddr.IPPrefix) bool {
-	return !isTailscaleInterface(i.Name, ips) && anyInterestingIP(ips)
+	includeLL := onlyLinkLocalIPv4(ips)
+	return !isTailscaleInterface(i.Name, ips) && anyInterestingIP(ips, includeLL)
 }
 
 // FilterAll always returns true, to use EqualFiltered against all interfaces.
@@ -391,6 +408,14 @@ var getPAC func() string
 //
 // It does not set the returned State.IsExpensive. The caller can populate that.
 func GetState() (*State, error) {
+	s, err := getStateMaybeLinkLocal(false)
+	if !s.HaveV4 && !s.HaveV6Global {
+		s, err = getStateMaybeLinkLocal(true)
+	}
+	return s, err
+}
+
+func getStateMaybeLinkLocal(includeLL bool) (*State, error) {
 	s := &State{
 		InterfaceIPs: make(map[string][]netaddr.IPPrefix),
 		Interface:    make(map[string]Interface),
@@ -403,7 +428,10 @@ func GetState() (*State, error) {
 			return
 		}
 		for _, pfx := range pfxs {
-			if pfx.IP.IsLoopback() || pfx.IP.IsLinkLocalUnicast() {
+			if pfx.IP.IsLoopback() {
+				continue
+			}
+			if pfx.IP.IsLinkLocalUnicast() && !includeLL {
 				continue
 			}
 			s.HaveV6Global = s.HaveV6Global || isGlobalV6(pfx.IP)
@@ -522,9 +550,9 @@ var (
 
 // anyInterestingIP reports whether pfxs contains any IP that matches
 // isInterestingIP.
-func anyInterestingIP(pfxs []netaddr.IPPrefix) bool {
+func anyInterestingIP(pfxs []netaddr.IPPrefix, includeLL bool) bool {
 	for _, pfx := range pfxs {
-		if isInterestingIP(pfx.IP) {
+		if isInterestingIP(pfx.IP, includeLL) {
 			return true
 		}
 	}
@@ -534,9 +562,16 @@ func anyInterestingIP(pfxs []netaddr.IPPrefix) bool {
 // isInterestingIP reports whether ip is an interesting IP that we
 // should log in interfaces.State logging. We don't need to show
 // localhost or link-local addresses.
-func isInterestingIP(ip netaddr.IP) bool {
-	if ip.IsLoopback() || ip.IsLinkLocalUnicast() {
+func isInterestingIP(ip netaddr.IP, includeLL bool) bool {
+	if ip.IsLoopback() {
+		return false
+	}
+	if ip.IsLinkLocalUnicast() && !includeLL {
 		return false
 	}
 	return true
+}
+
+func onlyLinkLocalIPv4(pfxs []netaddr.IPPrefix) bool {
+	return !anyInterestingIP(pfxs, false)
 }
