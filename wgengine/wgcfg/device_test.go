@@ -10,6 +10,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	"sync"
@@ -127,7 +128,7 @@ func TestDeviceConfig(t *testing.T) {
 	})
 
 	t.Run("device1 modify peer", func(t *testing.T) {
-		cfg1.Peers[0].Endpoints = "1.2.3.4:12345"
+		cfg1.Peers[0].Endpoints.IPPorts = []netaddr.IPPort{netaddr.MustParseIPPort("1.2.3.4:12345")}
 		if err := ReconfigDevice(device1, cfg1, t.Logf); err != nil {
 			t.Fatal(err)
 		}
@@ -135,7 +136,7 @@ func TestDeviceConfig(t *testing.T) {
 	})
 
 	t.Run("device1 replace endpoint", func(t *testing.T) {
-		cfg1.Peers[0].Endpoints = "1.1.1.1:123"
+		cfg1.Peers[0].Endpoints.IPPorts = []netaddr.IPPort{netaddr.MustParseIPPort("1.1.1.1:123")}
 		if err := ReconfigDevice(device1, cfg1, t.Logf); err != nil {
 			t.Fatal(err)
 		}
@@ -176,7 +177,7 @@ func TestDeviceConfig(t *testing.T) {
 		}
 		peersEqual := func(p, q Peer) bool {
 			return p.PublicKey == q.PublicKey && p.PersistentKeepalive == q.PersistentKeepalive &&
-				p.Endpoints == q.Endpoints && cidrsEqual(p.AllowedIPs, q.AllowedIPs)
+				reflect.DeepEqual(p.Endpoints, q.Endpoints) && cidrsEqual(p.AllowedIPs, q.AllowedIPs)
 		}
 		if !peersEqual(peer0(origCfg), peer0(newCfg)) {
 			t.Error("reconfig modified old peer")

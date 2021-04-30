@@ -7,6 +7,7 @@ package wgcfg
 import (
 	"bufio"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -24,21 +25,6 @@ type ParseError struct {
 
 func (e *ParseError) Error() string {
 	return fmt.Sprintf("%s: %q", e.why, e.offender)
-}
-
-func validateEndpoints(s string) error {
-	if s == "" {
-		// Otherwise strings.Split of the empty string produces [""].
-		return nil
-	}
-	vals := strings.Split(s, ",")
-	for _, val := range vals {
-		_, _, err := parseEndpoint(val)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func parseEndpoint(s string) (host string, port uint16, err error) {
@@ -168,11 +154,10 @@ func (cfg *Config) handlePublicKeyLine(value string) (*Peer, error) {
 func (cfg *Config) handlePeerLine(peer *Peer, key, value string) error {
 	switch key {
 	case "endpoint":
-		err := validateEndpoints(value)
+		err := json.Unmarshal([]byte(value), &peer.Endpoints)
 		if err != nil {
 			return err
 		}
-		peer.Endpoints = value
 	case "persistent_keepalive_interval":
 		n, err := strconv.ParseUint(value, 10, 16)
 		if err != nil {

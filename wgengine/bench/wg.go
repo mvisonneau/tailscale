@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"sync"
 
 	"github.com/tailscale/wireguard-go/tun"
@@ -87,8 +86,10 @@ func setupWGTest(logf logger.Logf, traf *TrafficGen, a1, a2 netaddr.IPPrefix) {
 		logf("e1 status: %v", *st)
 
 		var eps []string
+		endpoint := wgcfg.Endpoints{PublicKey: c1.PrivateKey.Public()}
 		for _, ep := range st.LocalAddrs {
 			eps = append(eps, ep.Addr.String())
+			endpoint.IPPorts = append(endpoint.IPPorts, ep.Addr)
 		}
 
 		n := tailcfg.Node{
@@ -107,7 +108,7 @@ func setupWGTest(logf logger.Logf, traf *TrafficGen, a1, a2 netaddr.IPPrefix) {
 		p := wgcfg.Peer{
 			PublicKey:  c1.PrivateKey.Public(),
 			AllowedIPs: []netaddr.IPPrefix{a1},
-			Endpoints:  strings.Join(eps, ","),
+			Endpoints:  endpoint,
 		}
 		c2.Peers = []wgcfg.Peer{p}
 		e2.Reconfig(&c2, &router.Config{}, new(dns.Config))
@@ -121,8 +122,10 @@ func setupWGTest(logf logger.Logf, traf *TrafficGen, a1, a2 netaddr.IPPrefix) {
 		logf("e2 status: %v", *st)
 
 		var eps []string
+		endpoint := wgcfg.Endpoints{PublicKey: c2.PrivateKey.Public()}
 		for _, ep := range st.LocalAddrs {
 			eps = append(eps, ep.Addr.String())
+			endpoint.IPPorts = append(endpoint.IPPorts, ep.Addr)
 		}
 
 		n := tailcfg.Node{
@@ -141,7 +144,7 @@ func setupWGTest(logf logger.Logf, traf *TrafficGen, a1, a2 netaddr.IPPrefix) {
 		p := wgcfg.Peer{
 			PublicKey:  c2.PrivateKey.Public(),
 			AllowedIPs: []netaddr.IPPrefix{a2},
-			Endpoints:  strings.Join(eps, ","),
+			Endpoints:  endpoint,
 		}
 		c1.Peers = []wgcfg.Peer{p}
 		e1.Reconfig(&c1, &router.Config{}, new(dns.Config))

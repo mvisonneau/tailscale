@@ -10,7 +10,6 @@ import (
 	"crypto/subtle"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"hash"
 	"net"
 	"strings"
@@ -34,7 +33,7 @@ var (
 	errDisabled       = errors.New("magicsock: legacy networking disabled")
 )
 
-func (c *Conn) createLegacyEndpointLocked(pk key.Public, addrs string) (conn.Endpoint, error) {
+func (c *Conn) createLegacyEndpointLocked(pk key.Public, addrs []netaddr.IPPort, rawdst string) (conn.Endpoint, error) {
 	if c.disableLegacy {
 		return nil, errDisabled
 	}
@@ -43,18 +42,9 @@ func (c *Conn) createLegacyEndpointLocked(pk key.Public, addrs string) (conn.End
 		Logf:      c.logf,
 		publicKey: pk,
 		curAddr:   -1,
-		rawdst:    addrs,
+		rawdst:    rawdst,
 	}
-
-	if addrs != "" {
-		for _, ep := range strings.Split(addrs, ",") {
-			ipp, err := netaddr.ParseIPPort(ep)
-			if err != nil {
-				return nil, fmt.Errorf("bogus address %q", ep)
-			}
-			a.ipPorts = append(a.ipPorts, ipp)
-		}
-	}
+	a.ipPorts = append(a.ipPorts, addrs...)
 
 	// If this endpoint is being updated, remember its old set of
 	// endpoints so we can remove any (from c.addrsByUDP) that are
